@@ -1,4 +1,3 @@
-const async = require('async');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -202,54 +201,3 @@ module.exports = class Browser extends EventEmitter {
     }
 };
 
-
-
-
-/**
- * Run a user script
- */
-function runUserScript(cb) {
-
-    if (userScript) {
-        _callUserScript(userScript)();
-    }
-    if (userPage['run-script']) {
-        _callUserScript(userPage['run-script'])();
-    }
-    components.forEach(function(component) {
-        if (component['run-script']) {
-            _callUserScript(component['run-script'])();
-        }
-    });
-
-    cb();
-}
-
-
-/**
- * Call a user script inside a function
- *
- * @private
- * @param {String} scriptFilename
- * @returns {Function}
- */
-function _callUserScript(scriptFilename) {
-
-    var scriptPath = scriptFilename;
-    if (!fs.isAbsolute(scriptPath)) {
-        scriptPath = basePath + '/' + scriptPath;
-    }
-
-    try {
-        var script = fs.read(scriptPath);
-    } catch (e) {
-        console.log('Could not read file: ' + scriptFilename);
-        phantom.exit(1);
-    }
-
-    return function() {
-        return page.evaluate(function(script) {
-            return (Function(script))();
-        }, script);
-    };
-}
